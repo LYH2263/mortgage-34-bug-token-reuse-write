@@ -1,0 +1,17 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "9400:9400"
+    volumes:
+      - mortgage_data:/data
+    environment:
+      DATA_DIR: /data
+  frontend:
+    build: ./frontend
+    ports:
+      - "4400:80"
+    depends_on:
+      - backend
+volumes:
+  mortgage_data:

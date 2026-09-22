@@ -1,0 +1,27 @@
+:root { --bg:#f4f0e6; --panel:#fff; --ink:#2c2416; --accent:#8b4513; --grid:#d8cfc0; }
+body { margin:0; font-family: "Courier New", monospace; background: var(--bg); color: var(--ink); }
+.ledger-app { display:grid; grid-template-columns: 180px 1fr; min-height:100vh; }
+.ledger-rail { background:#ebe3d4; padding:1rem; border-right:2px solid var(--accent); display:flex; flex-direction:column; gap:0.45rem; }
+.ledger-main { padding:1rem 1.25rem; background: repeating-linear-gradient(0deg, transparent, transparent 27px, var(--grid) 28px); }
+.page { max-width:960px; background: rgba(255,255,255,0.85); padding:1rem; border:1px solid var(--grid); }
+table { width:100%; border-collapse:collapse; background:var(--panel); }
+th,td { border:1px solid var(--grid); padding:0.35rem 0.5rem; }
+button { background:var(--accent); color:#fff; border:0; padding:0.35rem 0.75rem; cursor:pointer; }
+input { border:1px solid var(--grid); padding:0.3rem; }
+a { color: var(--accent); }
+.hero-num { font-size:1.8rem; font-weight:700; }
+
+.form-row { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.5rem; }
+.form-row label { display:flex; align-items:center; gap:0.35rem; }
+.actions { display:flex; gap:0.6rem; margin:0.75rem 0; }
+button:disabled { opacity:0.45; cursor:not-allowed; }
+.btn-confirm { background:#fff; color:var(--accent); border:1px solid var(--accent); }
+.hint { color:#6b5d48; font-size:0.85rem; }
+
+.badge { display:inline-block; padding:0.15rem 0.6rem; font-size:0.85rem; border:1px solid var(--grid); }
+.badge-ok { background:#e3efdd; border-color:#5a7d4a; color:#3d5a2e; }
+.badge-warn { background:#f6e8c8; border-color:#a9791f; color:#7a5413; }
+.badge-expired, .badge-stale { background:#f3d9d4; border-color:#9c3f30; color:#7d2c1f; }
+
+.error-banner { background:#f3d9d4; border:1px solid #9c3f30; color:#7d2c1f; padding:0.5rem 0.75rem; margin:0.5rem 0; }
+.receipt-panel, .result-panel { border:1px solid var(--grid); background:var(--panel); padding:0.5rem 0.75rem; margin-top:0.75rem; }

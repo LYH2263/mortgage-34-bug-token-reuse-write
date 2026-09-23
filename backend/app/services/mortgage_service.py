@@ -6,6 +6,7 @@ from app.config import RECEIPT_TTL_SECONDS
 from app.db import connect
 from app.engines.amortization import equal_payment_schedule
 from app.repositories import loans, receipts, runs, settings
+from app.services.receipt_confirm import reject_reason
 from app.utils import receipt as rcpt
 
 RECEIPT_KIND = "schedule"
@@ -73,18 +74,19 @@ class MortgageService:
         payload = {"principal": principal, "annual_rate": annual_rate, "months": months}
         rid = None
         try:
+            # IMMEDIATE：取写锁，使两枚并发确认在回执行上串行化；
+            # 配合 claim() 的 consumed=0 条件更新，保证一枚回执至多落库一次。
             conn.execute("BEGIN IMMEDIATE")
             r = receipts.get_by_code(conn, code)
-            if r is None:
-                raise _reject("receipt_not_found")
-            from app.services.receipt_confirm import mark_consumed, receipt_still_usable
-            if not receipt_still_usable(
-                    r, principal, annual_rate, months, loan_id, out["monthly_payment"]):
-                if r is None:
-                    raise _reject("receipt_not_found")
-                raise _reject("fingerprint_mismatch")
+            reason = reject_reason(
+                r, principal, annual_rate, months, loan_id, out["monthly_payment"])
+            if reason is not None:
+                raise _reject(reason)
 
-            mark_consumed(conn, r["id"], rcpt.utc_iso(rcpt.utc_now()))
+            now_iso = rcpt.utc_iso(rcpt.utc_now())
+            if not receipts.claim(conn, r["id"], now_iso):
+                # 并发下被另一请求抢先消费
+                raise _reject("receipt_used")
             rid = runs.insert(conn, RECEIPT_KIND, payload, out, loan_id)
             receipts.attach_run(conn, r["id"], rid)
             conn.commit()

@@ -77,14 +77,15 @@ class MortgageService:
             r = receipts.get_by_code(conn, code)
             if r is None:
                 raise _reject("receipt_not_found")
-            from app.services.receipt_confirm import mark_consumed, receipt_still_usable
-            if not receipt_still_usable(
-                    r, principal, annual_rate, months, loan_id, out["monthly_payment"]):
-                if r is None:
-                    raise _reject("receipt_not_found")
-                raise _reject("fingerprint_mismatch")
+            from app.services.receipt_confirm import receipt_reject_reason
+            reason = receipt_reject_reason(
+                r, principal, annual_rate, months, loan_id,
+                out["monthly_payment"])
+            if reason:
+                raise _reject(reason)
 
-            mark_consumed(conn, r["id"], rcpt.utc_iso(rcpt.utc_now()))
+            if receipts.claim(conn, r["id"], rcpt.utc_iso(rcpt.utc_now())) != 1:
+                raise _reject("receipt_used")
             rid = runs.insert(conn, RECEIPT_KIND, payload, out, loan_id)
             receipts.attach_run(conn, r["id"], rid)
             conn.commit()

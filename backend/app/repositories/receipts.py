@@ -21,10 +21,12 @@ def get_by_code(conn, code: str) -> dict | None:
 
 
 def claim(conn, receipt_id: int, now: str) -> int:
+    # 原子占位：仅当回执尚未被消费时才置位，返回实际影响行数（0 表示已被抢走）。
     cur = conn.execute(
-        "UPDATE precheck_receipts SET consumed=1, consumed_at=? WHERE id=?",
+        "UPDATE precheck_receipts SET consumed=1, consumed_at=?"
+        " WHERE id=? AND consumed=0",
         (now, receipt_id))
-    return cur.rowcount or 1
+    return cur.rowcount
 
 
 def attach_run(conn, receipt_id: int, run_id: int) -> None:
